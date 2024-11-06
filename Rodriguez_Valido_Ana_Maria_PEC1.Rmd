@@ -1,0 +1,131 @@
+---
+title: "PEC1 Análisis de Datos Ómicos"
+author: "ANA MARÍA RODRÍGUEZ VALIDO"
+date: "2024-11-06"
+output:
+  word_document:
+    toc: true
+  html_document:
+    toc: true
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Descripción de la PEC
+El objetivo de esta PEC es que planifiquéis y ejecutéis una versión simplificada del proceso de análisis de datos ómicos, a la vez que practicáis con algunas de las herramientas y métodos que hemos trabajado.
+
+# Ejercicio 1:
+En concreto lo que tendréis que hacer es:
+1. Seleccionar un dataset de metabolómica que podéis obtener de:
+- Este repositorio de github:https://github.com/nutrimetabolomics/metaboData/
+- Si lo preferís podéis usar algún dataset del repositorio metabolomicsWorkbench
+
+En este caso, he elegido un dataset de metabodata del repositorio de github llamado: human_cachexia.csv
+
+# Ejercicio 2:
+
+2. Una vez descargados los datos cread un contenedor del tipo SummarizedExperiment que contenga los datos y los metadatos (información acerca del dataset, las filas y las columnas). La clase SummarizedExperiment es una extensión de ExpressionSet y muchas aplicaciones o bases de datos (como metabolomicsWorkbench) lo utilizan en vez de usar expressionSet.
+
+```{r}
+# Descargamos los datos:
+
+datos = read.csv("~/Desktop/PEC1_Análisis de datos ómicos/human_cachexia.csv") 
+
+# A continuación, creamos un contenedor del tipo SummarizedExperiment.
+# En primer lugar, visualizamos y analizamos nuestros datos:
+
+class(datos)
+str(datos)
+
+# Como podemos observar, en la primera columna encontramos una variable de tipo caracter, que en este caso es el identificador de la muestra (Patient.ID), y en la segunda columna la variable Muscle.loss, que también es de tipo caracter. Las demás columnas constituyen los datos de expresión de los metabolitos.
+
+# Convertimos pues la variable Muscle.loss en factor para así facilitar el análisis:
+
+datos$Muscle.loss = as.factor(datos$Muscle.loss)
+str(datos)
+
+```
+
+Atendiendo a la información facilitada en el guión de Bioconductor (https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html), crearemos el SummarizedExperiment.
+
+Para construir un objeto SummarizedExperiment, primero debemos organizar los datos en tres estructuras principales: assays, rowData (o rowRanges) y colData. Dado que rowRanges se suele utilizar para datos genómicos y este dataset no los incluye, omitiremos rowRanges y nos enfocaremos en assays y colData. 
+
+1. Assay (Matriz de datos):
+
+- Esta matriz se corresponde con las concentraciones de metabolitos para cada paciente, es decir, con los valores numéricos, motivo por el cual eliminamos las columnas Patient ID y Muscle loss
+- Usaremos las filas como pacientes y las columnas como metabolitos.
+
+```{r}
+
+# Creamos la matriz:
+assays_data = as.matrix(datos[, -c(1, 2)])
+
+```
+
+
+2. colData (Metadatos de las muestras):
+
+- colData contiene la información de las muestras. 
+- Usaremos las columnas Patient ID como nombres de las filas y Muscle loss como metadatos.
+
+```{r}
+# Cargamos las librerías necesarias:
+
+library(S4Vectors)
+library(SummarizedExperiment)
+
+col_data = DataFrame(Muscle_loss = datos$Muscle.loss)
+rownames(col_data) = datos$Patient.ID  
+
+# Filtramos para mantener solo los pacientes que están en ambas matrices, evitando así posibles errores:
+common_samples = intersect(rownames(col_data), colnames(assays_data))
+
+# Volvemos a filtrar, pero esta vez las matrices para así tener el mismo orden y número de muestras, evitándose de esta manera nuevamente errores:
+assays_data = assays_data[, common_samples, drop = FALSE]
+col_data = col_data[common_samples, , drop = FALSE]
+```
+
+Finalmente, podemos construir el objeto SummarizedExperiment usando los datos en assays_data y col_data y la función SummarizedExperiment():
+
+```{r}
+library(SummarizedExperiment)
+
+se = SummarizedExperiment(assays = list(counts = assays_data), colData = col_data)
+se
+```
+
+# Ejercicio 3:
+
+3. Llevad a cabo una exploración del dataset que os proporcione una visión general del mismo en la línea de lo que hemos visto en las actividades.
+
+
+
+# Ejercicio 4:
+
+4. Elaborad un informe que describa el proceso que habéis realizado, incluyendo la descarga de los datos, la creación del contenedor, la exploración de los datos y la reposición de los datos en github. El nombre del repositorio tiene que ser el siguiente: APELLIDO1-Apellido2-Nombre-PEC1. Por ejemplo, en mi caso el repositorio se llamaría: “Sanchez-Pla-Alex-PEC1”
+
+# Ejercicio 5:
+
+5. Cread un repositorio de github que contenga
+5.1. el informe,
+5.2. el objeto contenedor con los datos y los metadatos en formato binario (.Rda),
+5.3. código R para la exploración de los datos
+5.4. los datos en formato texto y
+5.5. los metadatos acerca del dataset en un archivo markdown.
+
+Para crear el objeto contenedor con los datos y los metadatos en formato binario (.Rda) debemos utilizar la función save() de R:
+
+```{r}
+save(se, file = "se.Rda")
+
+```
+
+## Dirección URL del repositorio de Github: 
+https://github.com/Ana-UOCstudy/Rodriguez-Valido-Ana-Maria-PEC1.git
+
+
+
