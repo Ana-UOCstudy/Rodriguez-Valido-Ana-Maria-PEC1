@@ -36,14 +36,14 @@ El objetivo principal de esta PEC1 es aplicar los conocimientos adquiridos duran
 este primer reto de la asignatura "Análisis de datos ómicos", concretamente Bioconductor 
 y la exploración multivariante de datos. Por lo tanto, en nuestro caso el objetivo
 principal es crear un objeto de clase *SummarizedExperiment* para posteriormente
-llevar a cabo un análisis exploratorio de este último con el fin de dentificar patrones 
+llevar a cabo un análisis exploratorio de este último con el fin de identificar patrones 
 biológicamente significativos.
-Como objetivos más expecíficos podemos encontrar:
+Como objetivos más específicos podemos encontrar:
 
 - La selección y preparación de los datos para su posterior integración en un *SummarizedExperiment*
 y análisis con herramientas de Bioconductor.
 
-- La realización un análisis exploratorio de los datos, identificando posibles valores faltantes
+- La realización de un análisis exploratorio de los datos, identificando posibles valores faltantes
 o atípicos.
 
 - La reducción de la dimensionalidad del conjunto de datos utilizando el análisis de componentes 
